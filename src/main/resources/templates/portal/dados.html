@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{portal-layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Os meus dados</title>
+</head>
+<body>
+<main>
+    <h2 class="fw-bold mb-4">Os meus dados</h2>
+
+    <!-- ── Alerts ──────────────────────────────────────────────────────────── -->
+    <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${sucesso}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${erro}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- ── Left: read-only profile ───────────────────────────────────── -->
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header fw-semibold">Perfil</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted">Nome</dt>
+                        <dd class="col-sm-7" th:text="${cliente.nome}"></dd>
+
+                        <dt class="col-sm-5 text-muted">NIF</dt>
+                        <dd class="col-sm-7" th:text="${cliente.nif}"></dd>
+
+                        <dt class="col-sm-5 text-muted">Estado</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge"
+                                  th:classappend="${cliente.estado.name() == 'ATIVO'} ? 'bg-success' : 'bg-secondary'"
+                                  th:text="${cliente.estado}"></span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted">Username portal</dt>
+                        <dd class="col-sm-7" th:text="${cliente.username != null ? cliente.username : '—'}"></dd>
+
+                        <dt class="col-sm-5 text-muted">Data de registo</dt>
+                        <dd class="col-sm-7" th:text="${cliente.dataRegisto}"></dd>
+
+                        <hr class="my-3">
+
+                        <dt class="col-sm-5 text-muted">Email</dt>
+                        <dd class="col-sm-7" th:text="${cliente.email}"></dd>
+
+                        <dt class="col-sm-5 text-muted">Telefone</dt>
+                        <dd class="col-sm-7"
+                            th:text="${cliente.telefone != null ? cliente.telefone : '—'}"></dd>
+
+                        <dt class="col-sm-5 text-muted">Morada</dt>
+                        <dd class="col-sm-7"
+                            th:text="${cliente.morada != null ? cliente.morada : '—'}"></dd>
+                    </dl>
+                </div>
+                <div class="card-footer text-muted small">
+                    Nome, NIF e estado só podem ser alterados pelo gestor.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Right: edit form ──────────────────────────────────────────── -->
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header fw-semibold">Editar dados de contacto</div>
+                <div class="card-body">
+                    <form th:action="@{/portal/dados/editar}" method="post" novalidate>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" id="email" name="email" class="form-control"
+                                   th:value="${cliente.email}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="telefone" class="form-label fw-semibold">Telefone</label>
+                            <input type="tel" id="telefone" name="telefone" class="form-control"
+                                   th:value="${cliente.telefone}" placeholder="Ex: 912 345 678">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="morada" class="form-label fw-semibold">Morada</label>
+                            <input type="text" id="morada" name="morada" class="form-control"
+                                   th:value="${cliente.morada}" placeholder="Rua, número, localidade">
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="mb-1">
+                            <label for="novaPassword" class="form-label fw-semibold">
+                                Nova password do portal
+                            </label>
+                            <input type="password" id="novaPassword" name="novaPassword"
+                                   class="form-control" placeholder="Deixe em branco para não alterar">
+                            <div class="form-text">
+                                A password é utilizada para aceder a este portal.
+                                Deixe vazio se não quiser alterar.
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">Guardar alterações</button>
+                            <a href="/portal" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /row -->
+</main>
+</body>
+</html>

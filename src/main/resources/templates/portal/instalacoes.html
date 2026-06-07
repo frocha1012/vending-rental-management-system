@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{portal-layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>My Installations</title>
+</head>
+<body>
+<main>
+    <h1 class="mb-4">As minhas Instalações</h1>
+
+    <div th:if="${#lists.isEmpty(instalacoes)}" class="alert alert-info">
+        Não tem instalações registadas.
+    </div>
+
+    <table th:unless="${#lists.isEmpty(instalacoes)}" class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Contrato</th>
+            <th>Vending Machine</th>
+            <th>Data de Instalação</th>
+            <th>Local</th>
+            <th>Estado</th>
+            <th>Observações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="instalacao : ${instalacoes}">
+            <td th:text="${instalacao.id}"></td>
+            <td th:text="${'#' + instalacao.contrato.id}"></td>
+            <td th:text="${instalacao.contrato.vendingMachine.codigo}"></td>
+            <td th:text="${instalacao.dataInstalacao}"></td>
+            <td th:text="${instalacao.localInstalacao}"></td>
+            <td th:text="${instalacao.estado}"></td>
+            <td th:text="${instalacao.observacoes}"></td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

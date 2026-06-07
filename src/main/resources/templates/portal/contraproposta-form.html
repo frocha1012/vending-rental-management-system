@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{portal-layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Contraproposta</title>
+</head>
+<body>
+<main>
+    <h1 class="mb-3">Contraproposta</h1>
+
+    <div class="card mb-4" style="max-width: 600px;">
+        <div class="card-header">Proposta <strong th:text="'#' + ${proposta.id}"></strong></div>
+        <div class="card-body">
+            <p><strong>Vending Machine:</strong>
+                <span th:text="${proposta.vendingMachine.codigo + ' — ' + proposta.vendingMachine.modelo}"></span></p>
+            <p><strong>Duração atual:</strong>
+                <span th:text="${proposta.duracaoAnos != null ? proposta.duracaoAnos + (proposta.duracaoAnos == 1 ? ' ano' : ' anos') : '—'}"></span></p>
+            <p><strong>Valor proposto pelo gestor:</strong>
+                <span class="text-success fw-bold" th:text="${proposta.valorGestor + ' €'}"></span></p>
+            <p th:if="${proposta.observacoesGestor}">
+                <strong>Nota do gestor:</strong>
+                <span th:text="${proposta.observacoesGestor}"></span></p>
+        </div>
+    </div>
+
+    <p class="text-muted" style="max-width: 600px;">
+        Indique o novo valor que propõe e uma justificação. O gestor irá rever a sua contraproposta.
+    </p>
+
+    <form th:action="@{/portal/propostas/{id}/contraproposta(id=${proposta.id})}"
+          method="post" style="max-width: 600px;">
+
+        <div class="mb-3">
+            <label class="form-label">Novo valor mensal proposto (€)</label>
+            <input class="form-control" type="number" step="0.01" name="novoValor"
+                   th:value="${proposta.valorProposto}" min="0" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Duração do contrato</label>
+            <select class="form-select" name="novaDuracao">
+                <option value="1" th:selected="${proposta.duracaoAnos == 1}">1 ano</option>
+                <option value="2" th:selected="${proposta.duracaoAnos == 2}">2 anos</option>
+                <option value="3" th:selected="${proposta.duracaoAnos == 3}">3 anos</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Justificação / observações</label>
+            <textarea class="form-control" name="observacoes" rows="3"
+                      th:text="${proposta.observacoes}"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Enviar Contraproposta</button>
+        <a class="btn btn-secondary" href="/portal/propostas">Cancelar</a>
+    </form>
+</main>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{portal-layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+<main>
+
+    <!-- ── Welcome banner ──────────────────────────────────────────────────── -->
+    <div class="p-4 mb-4 rounded-3 border"
+         style="background: linear-gradient(135deg, #f8f9fa 0%, #e9f5ff 100%);">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h2 class="mb-1 fw-bold">
+                    Bem-vindo, <span th:text="${cliente.nome}">Cliente</span> 👋
+                </h2>
+                <p class="text-muted mb-0">
+                    Cliente desde
+                    <span th:text="${cliente.dataRegisto}"></span>
+                    &nbsp;·&nbsp;
+                    <span th:text="${cliente.email}"></span>
+                </p>
+            </div>
+            <a href="/portal/propostas/nova" class="btn btn-primary btn-lg">
+                + Solicitar Nova Máquina
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Summary cards ───────────────────────────────────────────────────── -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-success h-100">
+                <div class="card-body text-center py-4">
+                    <div class="display-4 fw-bold text-success" th:text="${totalContratos}">0</div>
+                    <div class="fs-6 text-muted mt-1">Contratos Ativos</div>
+                    <a href="/portal/contratos" class="btn btn-outline-success btn-sm mt-3">
+                        Ver Contratos →
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-warning h-100">
+                <div class="card-body text-center py-4">
+                    <div class="display-4 fw-bold text-warning" th:text="${totalPropostas}">0</div>
+                    <div class="fs-6 text-muted mt-1">Propostas</div>
+                    <a href="/portal/propostas" class="btn btn-outline-warning btn-sm mt-3">
+                        Ver Propostas →
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-info h-100">
+                <div class="card-body text-center py-4">
+                    <div class="display-4 fw-bold text-info" th:text="${totalInstalacoes}">0</div>
+                    <div class="fs-6 text-muted mt-1">Instalações</div>
+                    <a href="/portal/instalacoes" class="btn btn-outline-info btn-sm mt-3">
+                        Ver Instalações →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Recent proposals ────────────────────────────────────────────────── -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 fw-semibold">Propostas Recentes</h5>
+            <a href="/portal/propostas" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(recentePropostas)}" class="text-muted fst-italic small">
+            Ainda não submeteu nenhuma proposta.
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(recentePropostas)}">
+            <table class="table table-hover table-sm align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Vending Machine</th>
+                    <th>Valor Proposto</th>
+                    <th>Duração</th>
+                    <th>Data</th>
+                    <th>Estado</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${recentePropostas}">
+                    <td th:text="${p.id}"></td>
+                    <td th:text="${p.vendingMachine.codigo + ' — ' + p.vendingMachine.modelo}"></td>
+                    <td th:text="${p.valorProposto + ' €'}"></td>
+                    <td th:text="${p.duracaoAnos != null ? p.duracaoAnos + ' ano(s)' : '—'}"></td>
+                    <td th:text="${p.dataProposta}"></td>
+                    <td>
+                        <span th:switch="${p.estado.name()}">
+                            <span th:case="'ACEITE'"          class="badge bg-success"          th:text="${p.estado}"></span>
+                            <span th:case="'REJEITADA'"       class="badge bg-danger"           th:text="${p.estado}"></span>
+                            <span th:case="'ENVIADA_CLIENTE'" class="badge bg-primary"          th:text="${p.estado}"></span>
+                            <span th:case="'EXPIRADA'"        class="badge bg-secondary"        th:text="${p.estado}"></span>
+                            <span th:case="*"                 class="badge bg-warning text-dark" th:text="${p.estado}"></span>
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Recent contracts ─────────────────────────────────────────────────── -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 fw-semibold">Contratos Recentes</h5>
+            <a href="/portal/contratos" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(recenteContratos)}" class="text-muted fst-italic small">
+            Ainda não tem contratos registados.
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(recenteContratos)}">
+            <table class="table table-hover table-sm align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Vending Machine</th>
+                    <th>Valor Mensal</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Estado</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${recenteContratos}">
+                    <td th:text="${c.id}"></td>
+                    <td th:text="${c.vendingMachine.codigo + ' — ' + c.vendingMachine.modelo}"></td>
+                    <td th:text="${c.valorMensal + ' €'}"></td>
+                    <td th:text="${c.dataInicio}"></td>
+                    <td th:text="${c.dataFim != null ? c.dataFim : '—'}"></td>
+                    <td>
+                        <span th:switch="${c.estado.name()}">
+                            <span th:case="'ATIVO'"     class="badge bg-success"           th:text="${c.estado}"></span>
+                            <span th:case="'TERMINADO'" class="badge bg-secondary"         th:text="${c.estado}"></span>
+                            <span th:case="'SUSPENSO'"  class="badge bg-warning text-dark" th:text="${c.estado}"></span>
+                            <span th:case="*"           class="badge bg-light text-dark"   th:text="${c.estado}"></span>
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

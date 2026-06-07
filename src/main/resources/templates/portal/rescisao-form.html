@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{portal-layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Pedir Rescisão</title>
+</head>
+<body>
+<main>
+    <h1 class="mb-1">Pedir Rescisão de Contrato</h1>
+    <p class="text-muted mb-4">
+        Contrato <strong th:text="${contrato.id}"></strong> —
+        <span th:text="${contrato.vendingMachine.codigo + ' ' + contrato.vendingMachine.modelo}"></span>
+    </p>
+
+    <div class="alert alert-warning">
+        <strong>Atenção:</strong> Este pedido será analisado pelo gestor. O contrato permanece ativo até ser aprovado.
+    </div>
+
+    <div class="card" style="max-width: 560px;">
+        <div class="card-body">
+            <form th:action="@{/portal/contratos/{id}/rescisao(id=${contrato.id})}" method="post">
+
+                <div class="mb-3">
+                    <label for="motivo" class="form-label fw-semibold">Motivo</label>
+                    <select id="motivo" name="motivo" class="form-select" required>
+                        <option value="">— Selecione um motivo —</option>
+                        <option th:each="m : ${motivos}"
+                                th:value="${m.name()}"
+                                th:text="${m.name().replace('_', ' ')}"></option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="descricao" class="form-label fw-semibold">Descrição (opcional)</label>
+                    <textarea id="descricao" name="descricao" class="form-control" rows="4"
+                              placeholder="Descreva o motivo com mais detalhe..."></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Submeter Pedido</button>
+                    <a th:href="@{/portal/contratos}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

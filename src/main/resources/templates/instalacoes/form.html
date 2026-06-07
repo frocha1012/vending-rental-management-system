@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title th:text="${instalacao.id != null} ? 'Editar Instalacao' : 'Nova Instalacao'">Instalacao</title>
+</head>
+<body>
+<main>
+    <h1 th:text="${instalacao.id != null} ? 'Editar Instalacao' : 'Nova Instalacao'">Instalacao</h1>
+
+    <form th:action="@{/instalacoes/guardar}" th:object="${instalacao}" method="post" class="mt-3">
+        <input type="hidden" th:field="*{id}"/>
+
+        <div class="mb-3">
+            <label class="form-label">Contrato</label>
+            <select class="form-select" th:field="*{contrato.id}" required>
+                <option value="">-- Selecionar --</option>
+                <option th:each="c : ${contratos}"
+                        th:value="${c.id}"
+                        th:text="${'#' + c.id + ' — ' + c.cliente.nome + ' / ' + c.vendingMachine.codigo}">
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Data Instalacao</label>
+            <input class="form-control" type="date" th:field="*{dataInstalacao}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Local Instalacao</label>
+            <input class="form-control" type="text" th:field="*{localInstalacao}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Estado</label>
+            <select class="form-select" th:field="*{estado}">
+                <option th:each="estado : ${estados}" th:value="${estado}" th:text="${estado}"></option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Observacoes</label>
+            <textarea class="form-control" th:field="*{observacoes}" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a class="btn btn-secondary" href="/instalacoes">Cancelar</a>
+    </form>
+</main>
+</body>
+</html>

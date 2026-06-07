@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Clientes</title>
+</head>
+<body>
+<main>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Clientes</h1>
+        <a class="btn btn-primary" href="/clientes/novo">Novo Cliente</a>
+    </div>
+
+    <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
+    <div th:if="${erro}" class="alert alert-danger" role="alert" th:text="${erro}"></div>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Telefone</th>
+            <th>NIF</th>
+            <th>Estado</th>
+            <th>Data Registo</th>
+            <th>Acoes</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="cliente : ${clientes}">
+            <td th:text="${cliente.id}"></td>
+            <td th:text="${cliente.nome}"></td>
+            <td th:text="${cliente.email}"></td>
+            <td th:text="${cliente.telefone}"></td>
+            <td th:text="${cliente.nif}"></td>
+            <td th:text="${cliente.estado}"></td>
+            <td th:text="${cliente.dataRegisto}"></td>
+            <td>
+                <a class="btn btn-sm btn-secondary" th:href="@{/clientes/{id}/editar(id=${cliente.id})}">Editar</a>
+                <form th:action="@{/clientes/{id}/eliminar(id=${cliente.id})}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Eliminar este cliente?')">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

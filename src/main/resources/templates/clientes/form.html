@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title th:text="${cliente.id != null} ? 'Editar Cliente' : 'Novo Cliente'">Cliente</title>
+</head>
+<body>
+<main>
+    <h1 th:text="${cliente.id != null} ? 'Editar Cliente' : 'Novo Cliente'">Cliente</h1>
+
+    <form th:action="@{/clientes/guardar}" th:object="${cliente}" method="post" class="mt-3">
+        <input type="hidden" th:field="*{id}"/>
+
+        <div class="mb-3">
+            <label class="form-label">Nome</label>
+            <input class="form-control" type="text" th:field="*{nome}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" th:field="*{email}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Telefone</label>
+            <input class="form-control" type="text" th:field="*{telefone}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">NIF</label>
+            <input class="form-control" type="text" th:field="*{nif}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Estado</label>
+            <select class="form-select" th:field="*{estado}">
+                <option th:each="estado : ${estados}" th:value="${estado}" th:text="${estado}"></option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Data Registo</label>
+            <input class="form-control" type="date" th:field="*{dataRegisto}" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a class="btn btn-secondary" href="/clientes">Cancelar</a>
+    </form>
+</main>
+</body>
+</html>

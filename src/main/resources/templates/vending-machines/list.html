@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Vending Machines</title>
+</head>
+<body>
+<main>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Vending Machines</h1>
+        <a class="btn btn-primary" href="/vending-machines/novo">Nova Vending Machine</a>
+    </div>
+
+    <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
+    <div th:if="${erro}" class="alert alert-danger" role="alert" th:text="${erro}"></div>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Codigo</th>
+            <th>Modelo</th>
+            <th>Localizacao</th>
+            <th>Estado</th>
+            <th>Preco Mensal</th>
+            <th>Acoes</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="vm : ${vendingMachines}">
+            <td th:text="${vm.id}"></td>
+            <td th:text="${vm.codigo}"></td>
+            <td th:text="${vm.modelo}"></td>
+            <td th:text="${vm.localizacao}"></td>
+            <td th:text="${vm.estado}"></td>
+            <td th:text="${vm.precoAluguerMensal}"></td>
+            <td>
+                <a class="btn btn-sm btn-secondary" th:href="@{/vending-machines/{id}/editar(id=${vm.id})}">Editar</a>
+                <form th:action="@{/vending-machines/{id}/eliminar(id=${vm.id})}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Eliminar esta vending machine?')">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

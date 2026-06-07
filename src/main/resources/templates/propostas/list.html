@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Propostas</title>
+</head>
+<body>
+<main>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Propostas</h1>
+        <a class="btn btn-primary" href="/propostas/novo">Nova Proposta</a>
+    </div>
+
+    <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
+    <div th:if="${erro}" class="alert alert-danger" role="alert" th:text="${erro}"></div>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Vending Machine</th>
+            <th>Data Proposta</th>
+            <th>Valor Proposto</th>
+            <th>Estado</th>
+            <th>Observacoes</th>
+            <th>Acoes</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="proposta : ${propostas}">
+            <td th:text="${proposta.id}"></td>
+            <td th:text="${proposta.cliente.nome}"></td>
+            <td th:text="${proposta.vendingMachine.codigo}"></td>
+            <td th:text="${proposta.dataProposta}"></td>
+            <td th:text="${proposta.valorProposto}"></td>
+            <td th:text="${proposta.estado}"></td>
+            <td th:text="${proposta.observacoes}"></td>
+            <td>
+                <a class="btn btn-sm btn-secondary" th:href="@{/propostas/{id}/editar(id=${proposta.id})}">Editar</a>
+                <form th:action="@{/propostas/{id}/eliminar(id=${proposta.id})}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Eliminar esta proposta?')">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

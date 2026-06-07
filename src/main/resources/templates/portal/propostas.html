@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{portal-layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>As minhas Propostas</title>
+</head>
+<body>
+<main>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>As minhas Propostas</h1>
+        <a class="btn btn-primary" href="/portal/propostas/nova">Nova Proposta</a>
+    </div>
+
+    <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
+    <div th:if="${erro}" class="alert alert-danger" role="alert" th:text="${erro}"></div>
+
+    <div th:if="${#lists.isEmpty(propostas)}" class="alert alert-info">
+        Não tem propostas registadas. Clique em "Nova Proposta" para começar.
+    </div>
+
+    <div th:each="proposta : ${propostas}" class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+                Proposta <strong th:text="'#' + ${proposta.id}"></strong>
+                &nbsp;—&nbsp;
+                <span th:text="${proposta.vendingMachine.codigo + ' / ' + proposta.vendingMachine.modelo}"></span>
+            </span>
+            <span th:switch="${proposta.estado.name()}">
+                <span th:case="'PENDENTE'"         class="badge bg-secondary">Pendente</span>
+                <span th:case="'EM_ANALISE'"       class="badge bg-info text-dark">Em análise</span>
+                <span th:case="'ENVIADA_CLIENTE'"  class="badge bg-warning text-dark">Aguarda resposta</span>
+                <span th:case="'ACEITE'"           class="badge bg-success">Aceite</span>
+                <span th:case="'REJEITADA'"        class="badge bg-danger">Rejeitada</span>
+                <span th:case="'CONTRAPROPOSTA'"   class="badge bg-primary">Contraproposta enviada</span>
+                <span th:case="*"                  class="badge bg-light text-dark" th:text="${proposta.estado}"></span>
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Data:</strong> <span th:text="${proposta.dataProposta}"></span></p>
+                    <p class="mb-1"><strong>Duração pretendida:</strong>
+                        <span th:text="${proposta.duracaoAnos != null ? proposta.duracaoAnos + (proposta.duracaoAnos == 1 ? ' ano' : ' anos') : '—'}"></span></p>
+                    <p class="mb-1"><strong>Valor proposto pelo cliente:</strong>
+                        <span th:text="${proposta.valorProposto + ' €'}"></span></p>
+                    <p class="mb-1" th:if="${proposta.observacoes}">
+                        <strong>As minhas observações:</strong>
+                        <span th:text="${proposta.observacoes}"></span></p>
+                </div>
+                <div class="col-md-6" th:if="${proposta.valorGestor != null}">
+                    <p class="mb-1"><strong>Valor proposto pelo gestor:</strong>
+                        <span class="text-success fw-bold" th:text="${proposta.valorGestor + ' €'}"></span></p>
+                    <p class="mb-1" th:if="${proposta.observacoesGestor}">
+                        <strong>Nota do gestor:</strong>
+                        <span th:text="${proposta.observacoesGestor}"></span></p>
+                </div>
+            </div>
+
+            <!-- Action buttons — only shown when proposal is waiting for client response -->
+            <div th:if="${proposta.estado == ENVIADA_CLIENTE}" class="mt-3 d-flex gap-2">
+                <form th:action="@{/portal/propostas/{id}/aceitar(id=${proposta.id})}" method="post">
+                    <button type="submit" class="btn btn-success"
+                            onclick="return confirm('Confirma a aceitação desta proposta? Será criado um contrato automaticamente.')">
+                        ✔ Aceitar
+                    </button>
+                </form>
+                <form th:action="@{/portal/propostas/{id}/rejeitar(id=${proposta.id})}" method="post">
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Confirma a rejeição desta proposta?')">
+                        ✘ Rejeitar
+                    </button>
+                </form>
+                <a th:href="@{/portal/propostas/{id}/contraproposta(id=${proposta.id})}"
+                   class="btn btn-outline-primary">
+                    ↩ Contraproposta
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
