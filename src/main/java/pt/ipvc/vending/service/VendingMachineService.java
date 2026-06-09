@@ -18,13 +18,16 @@ public class VendingMachineService {
     private final VendingMachineRepository vendingMachineRepository;
     private final ContratoRepository contratoRepository;
     private final PropostaRepository propostaRepository;
+    private final AuditLogService auditLogService;
 
     public VendingMachineService(VendingMachineRepository vendingMachineRepository,
                                  ContratoRepository contratoRepository,
-                                 PropostaRepository propostaRepository) {
+                                 PropostaRepository propostaRepository,
+                                 AuditLogService auditLogService) {
         this.vendingMachineRepository = vendingMachineRepository;
         this.contratoRepository = contratoRepository;
         this.propostaRepository = propostaRepository;
+        this.auditLogService = auditLogService;
     }
 
     public List<VendingMachine> listarTodas() {
@@ -35,8 +38,17 @@ public class VendingMachineService {
         return vendingMachineRepository.findById(id);
     }
 
-    public VendingMachine guardar(VendingMachine vendingMachine) {
-        return vendingMachineRepository.save(vendingMachine);
+    public VendingMachine guardar(VendingMachine vm) {
+        boolean isNew = vm.getId() == null;
+        VendingMachine saved = vendingMachineRepository.save(vm);
+        if (isNew) {
+            auditLogService.logCreate("VendingMachine", saved.getId(),
+                    "VendingMachine criada: " + saved.getCodigo() + " / " + saved.getModelo());
+        } else {
+            auditLogService.logUpdate("VendingMachine", saved.getId(),
+                    "VendingMachine atualizada: " + saved.getCodigo(), null, null);
+        }
+        return saved;
     }
 
     public void eliminar(Long id) {
@@ -48,6 +60,9 @@ public class VendingMachineService {
             throw new EntidadeEmUsoException(
                     "Cannot delete machine because it is associated with proposals.");
         }
+        VendingMachine vm = vendingMachineRepository.findById(id).orElse(null);
         vendingMachineRepository.deleteById(id);
+        auditLogService.logDelete("VendingMachine", id,
+                "VendingMachine eliminada: " + (vm != null ? vm.getCodigo() : id));
     }
 }

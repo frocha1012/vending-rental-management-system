@@ -16,6 +16,7 @@ import pt.ipvc.vending.domain.entity.Proposta;
 import pt.ipvc.vending.domain.enums.EstadoContrato;
 import pt.ipvc.vending.domain.enums.EstadoProposta;
 import pt.ipvc.vending.domain.enums.MotivoRescisao;
+import pt.ipvc.vending.service.AuditContext;
 import pt.ipvc.vending.service.ClienteService;
 import pt.ipvc.vending.service.ContratoService;
 import pt.ipvc.vending.service.InstalacaoService;
@@ -99,6 +100,7 @@ public class PortalController {
                               @RequestParam(required = false) String novaPassword,
                               RedirectAttributes redirectAttributes) {
         Long clienteId = (Long) session.getAttribute("clienteId");
+        setWebActor(session);
         try {
             clienteService.atualizarDadosProprios(clienteId, email, telefone, morada, novaPassword);
             redirectAttributes.addFlashAttribute("sucesso",
@@ -159,6 +161,7 @@ public class PortalController {
                                  @RequestParam String motivo,
                                  @RequestParam(required = false) String descricao,
                                  RedirectAttributes redirectAttributes) {
+        setWebActor(session);
         Contrato contrato = validarPropriedadeContrato(contratoId, session);
 
         PedidoRescisaoContrato pedido = new PedidoRescisaoContrato();
@@ -213,6 +216,7 @@ public class PortalController {
                                    @RequestParam Integer duracaoAnos,
                                    @RequestParam(required = false) String observacoes,
                                    RedirectAttributes redirectAttributes) {
+        setWebActor(session);
         Cliente cliente = clienteAtual(session);
 
         Proposta proposta = new Proposta();
@@ -236,6 +240,7 @@ public class PortalController {
     public String aceitar(@PathVariable Long id,
                           HttpSession session,
                           RedirectAttributes redirectAttributes) {
+        setWebActor(session);
         validarPropriedadeProposta(id, session);
         propostaService.aceitar(id);
         redirectAttributes.addFlashAttribute("sucesso",
@@ -247,6 +252,7 @@ public class PortalController {
     public String rejeitar(@PathVariable Long id,
                            HttpSession session,
                            RedirectAttributes redirectAttributes) {
+        setWebActor(session);
         validarPropriedadeProposta(id, session);
         propostaService.rejeitar(id);
         redirectAttributes.addFlashAttribute("sucesso", "Proposta rejeitada.");
@@ -267,6 +273,7 @@ public class PortalController {
                                        @RequestParam(required = false) Integer novaDuracao,
                                        @RequestParam(required = false) String observacoes,
                                        RedirectAttributes redirectAttributes) {
+        setWebActor(session);
         validarPropriedadeProposta(id, session);
         propostaService.contraproposta(id, novoValor, observacoes, novaDuracao);
         redirectAttributes.addFlashAttribute("sucesso",
@@ -275,6 +282,12 @@ public class PortalController {
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────
+
+    /** Populates AuditContext from the current HTTP session so services can attribute the action. */
+    private void setWebActor(HttpSession session) {
+        String nome = (String) session.getAttribute("clienteNome");
+        AuditContext.setActor("CLIENTE", nome != null ? nome : "?");
+    }
 
     private Cliente clienteAtual(HttpSession session) {
         Long clienteId = (Long) session.getAttribute("clienteId");

@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pt.ipvc.vending.domain.entity.Contrato;
 import pt.ipvc.vending.domain.entity.Instalacao;
 import pt.ipvc.vending.domain.entity.Proposta;
+import pt.ipvc.vending.domain.enums.AuditAction;
 import pt.ipvc.vending.domain.enums.EstadoContrato;
 import pt.ipvc.vending.domain.enums.EstadoInstalacao;
 import pt.ipvc.vending.domain.enums.EstadoProposta;
@@ -24,13 +25,16 @@ public class PropostaService {
     private final PropostaRepository propostaRepository;
     private final ContratoRepository contratoRepository;
     private final InstalacaoRepository instalacaoRepository;
+    private final AuditLogService auditLogService;
 
     public PropostaService(PropostaRepository propostaRepository,
                            ContratoRepository contratoRepository,
-                           InstalacaoRepository instalacaoRepository) {
+                           InstalacaoRepository instalacaoRepository,
+                           AuditLogService auditLogService) {
         this.propostaRepository = propostaRepository;
         this.contratoRepository = contratoRepository;
         this.instalacaoRepository = instalacaoRepository;
+        this.auditLogService = auditLogService;
     }
 
     public List<Proposta> listarTodas() {
@@ -46,11 +50,21 @@ public class PropostaService {
     }
 
     public Proposta guardar(Proposta proposta) {
-        return propostaRepository.save(proposta);
+        boolean isNew = proposta.getId() == null;
+        Proposta saved = propostaRepository.save(proposta);
+        if (isNew) {
+            auditLogService.logCreate("Proposta", saved.getId(),
+                    "Proposta submetida pelo cliente — valor: " + saved.getValorProposto() + " €");
+        } else {
+            auditLogService.logUpdate("Proposta", saved.getId(),
+                    "Proposta atualizada — estado: " + saved.getEstado(), null, null);
+        }
+        return saved;
     }
 
     public void eliminar(Long id) {
         propostaRepository.deleteById(id);
+        auditLogService.logDelete("Proposta", id, "Proposta eliminada: #" + id);
     }
 
     public List<Proposta> listarPorCliente(Long clienteId) {
@@ -61,10 +75,15 @@ public class PropostaService {
     public Proposta tomarEmAnalise(Long id, BigDecimal valorGestor, String observacoesGestor) {
         Proposta proposta = propostaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Proposta nao encontrada: " + id));
+        String oldEstado = proposta.getEstado().name();
         proposta.setValorGestor(valorGestor);
         proposta.setObservacoesGestor(observacoesGestor);
         proposta.setEstado(EstadoProposta.EM_ANALISE);
-        return propostaRepository.save(proposta);
+        Proposta saved = propostaRepository.save(proposta);
+        auditLogService.logStatusChange("Proposta", id,
+                "Proposta tomada em análise — preço gestor: " + valorGestor + " €",
+                oldEstado, EstadoProposta.EM_ANALISE.name());
+        return saved;
     }
 
     // Manager: send the proposal to the client for review
@@ -74,8 +93,13 @@ public class PropostaService {
         if (proposta.getValorGestor() == null) {
             throw new IllegalStateException("Cannot send to client without a manager price.");
         }
+        String oldEstado = proposta.getEstado().name();
         proposta.setEstado(EstadoProposta.ENVIADA_CLIENTE);
-        return propostaRepository.save(proposta);
+        Proposta saved = propostaRepository.save(proposta);
+        auditLogService.logStatusChange("Proposta", id,
+                "Proposta enviada ao cliente para aprovação",
+                oldEstado, EstadoProposta.ENVIADA_CLIENTE.name());
+        return saved;
     }
 
     // Client: accept — creates Contrato + Instalacao
@@ -89,7 +113,6 @@ public class PropostaService {
         BigDecimal valorFinal = proposta.getValorGestor() != null
                 ? proposta.getValorGestor()
                 : proposta.getValorProposto();
-
         int anos = proposta.getDuracaoAnos() != null ? proposta.getDuracaoAnos() : 1;
 
         Contrato contrato = new Contrato();
@@ -108,20 +131,28 @@ public class PropostaService {
         instalacao.setEstado(EstadoInstalacao.AGENDADA);
         instalacao.setObservacoes("Instalacao criada automaticamente apos aceitacao de proposta #" + id);
         instalacaoRepository.save(instalacao);
+
+        auditLogService.logCustomAction(AuditAction.ACCEPT, "Proposta", id,
+                "Cliente aceitou a proposta. Contrato #" + contrato.getId()
+                + " criado com valor " + valorFinal + " €/" + anos + " ano(s).");
     }
 
     // Client: reject
     public void rejeitar(Long id) {
         Proposta proposta = propostaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Proposta nao encontrada: " + id));
+        String oldEstado = proposta.getEstado().name();
         proposta.setEstado(EstadoProposta.REJEITADA);
         propostaRepository.save(proposta);
+        auditLogService.logCustomAction(AuditAction.REJECT, "Proposta", id,
+                "Cliente rejeitou a proposta.");
     }
 
     // Client: counter-propose with a new value and optionally a new duration
     public void contraproposta(Long id, BigDecimal novoValor, String observacoes, Integer novaDuracao) {
         Proposta proposta = propostaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Proposta nao encontrada: " + id));
+        BigDecimal oldValor = proposta.getValorProposto();
         proposta.setValorProposto(novoValor);
         proposta.setObservacoes(observacoes);
         if (novaDuracao != null) {
@@ -129,5 +160,8 @@ public class PropostaService {
         }
         proposta.setEstado(EstadoProposta.CONTRAPROPOSTA);
         propostaRepository.save(proposta);
+        auditLogService.logCustomAction(AuditAction.COUNTER_PROPOSAL, "Proposta", id,
+                "Cliente enviou contraproposta — novo valor: " + novoValor + " €"
+                + (novaDuracao != null ? ", duração: " + novaDuracao + " ano(s)" : ""));
     }
 }

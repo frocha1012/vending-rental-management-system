@@ -16,11 +16,14 @@ public class ContratoService {
 
     private final ContratoRepository contratoRepository;
     private final InstalacaoRepository instalacaoRepository;
+    private final AuditLogService auditLogService;
 
     public ContratoService(ContratoRepository contratoRepository,
-                           InstalacaoRepository instalacaoRepository) {
+                           InstalacaoRepository instalacaoRepository,
+                           AuditLogService auditLogService) {
         this.contratoRepository = contratoRepository;
         this.instalacaoRepository = instalacaoRepository;
+        this.auditLogService = auditLogService;
     }
 
     public List<Contrato> listarTodos() {
@@ -40,7 +43,16 @@ public class ContratoService {
     }
 
     public Contrato guardar(Contrato contrato) {
-        return contratoRepository.save(contrato);
+        boolean isNew = contrato.getId() == null;
+        Contrato saved = contratoRepository.save(contrato);
+        if (isNew) {
+            auditLogService.logCreate("Contrato", saved.getId(),
+                    "Contrato criado — estado: " + saved.getEstado());
+        } else {
+            auditLogService.logUpdate("Contrato", saved.getId(),
+                    "Contrato atualizado — estado: " + saved.getEstado(), null, null);
+        }
+        return saved;
     }
 
     public void eliminar(Long id) {
@@ -49,5 +61,6 @@ public class ContratoService {
                     "Cannot delete contract because installation records exist.");
         }
         contratoRepository.deleteById(id);
+        auditLogService.logDelete("Contrato", id, "Contrato eliminado: #" + id);
     }
 }

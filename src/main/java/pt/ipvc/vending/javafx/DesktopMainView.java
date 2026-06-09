@@ -113,6 +113,14 @@ public class DesktopMainView {
                         root.setCenter(v.getRoot());
                     })
             );
+            if (role == BackofficeRole.ADMIN) {
+                menu.getChildren().add(
+                        navBtn(theme, "Audit Logs", () -> {
+                            AuditLogDesktopView v = new AuditLogDesktopView();
+                            root.setCenter(v.getRoot());
+                        })
+                );
+            }
         }
 
         VBox top = new VBox(8, headerPane, menu);

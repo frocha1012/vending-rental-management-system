@@ -3,6 +3,7 @@ package pt.ipvc.vending.javafx;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import pt.ipvc.vending.service.AuditContext;
 
 public class DesktopApplication extends Application {
 
@@ -24,6 +25,7 @@ public class DesktopApplication extends Application {
     }
 
     private void showMainView(Stage stage, BackofficeRole role) {
+        AuditContext.setActor(role.name(), role.getLabel());
         RoleTheme.setCurrent(RoleTheme.forRole(role));
         DesktopMainView mainView = new DesktopMainView(
                 stage, role, () -> showRoleSelection(stage));
