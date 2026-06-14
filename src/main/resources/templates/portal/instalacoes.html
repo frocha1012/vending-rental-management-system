@@ -2,40 +2,58 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{portal-layout :: layout(~{::title}, ~{::main})}">
 <head>
-    <title>My Installations</title>
+    <title>As minhas Instalações</title>
 </head>
 <body>
 <main>
-    <h1 class="mb-4">As minhas Instalações</h1>
-
-    <div th:if="${#lists.isEmpty(instalacoes)}" class="alert alert-info">
-        Não tem instalações registadas.
+    <div class="section-head">
+        <h5 class="fw-bold">As minhas Instalações</h5>
     </div>
 
-    <table th:unless="${#lists.isEmpty(instalacoes)}" class="table table-striped">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Contrato</th>
-            <th>Vending Machine</th>
-            <th>Data de Instalação</th>
-            <th>Local</th>
-            <th>Estado</th>
-            <th>Observações</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="instalacao : ${instalacoes}">
-            <td th:text="${instalacao.id}"></td>
-            <td th:text="${'#' + instalacao.contrato.id}"></td>
-            <td th:text="${instalacao.contrato.vendingMachine.codigo}"></td>
-            <td th:text="${instalacao.dataInstalacao}"></td>
-            <td th:text="${instalacao.localInstalacao}"></td>
-            <td th:text="${instalacao.estado}"></td>
-            <td th:text="${instalacao.observacoes}"></td>
-        </tr>
-        </tbody>
-    </table>
+    <div th:if="${#lists.isEmpty(instalacoes)}" class="surface-card">
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-tools"></i></div>
+            <h6>Não tem instalações registadas</h6>
+            <p class="mb-0">As instalações aparecem aqui depois de um contrato ser ativado.</p>
+        </div>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(instalacoes)}" class="surface-card table-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Contrato</th>
+                    <th>Vending Machine</th>
+                    <th>Data de Instalação</th>
+                    <th>Local</th>
+                    <th>Estado</th>
+                    <th>Observações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="instalacao : ${instalacoes}">
+                    <td class="text-muted" th:text="${instalacao.id}"></td>
+                    <td th:text="${'#' + instalacao.contrato.id}"></td>
+                    <td class="fw-semibold" th:text="${instalacao.contrato.vendingMachine.codigo}"></td>
+                    <td class="text-muted" th:text="${instalacao.dataInstalacao}"></td>
+                    <td th:text="${instalacao.localInstalacao}"></td>
+                    <td>
+                        <span th:switch="${instalacao.estado.name()}">
+                            <span th:case="'CONCLUIDA'" class="status-badge status-success" th:text="${instalacao.estado}"></span>
+                            <span th:case="'CANCELADA'" class="status-badge status-danger"  th:text="${instalacao.estado}"></span>
+                            <span th:case="'EM_CURSO'"  class="status-badge status-info"    th:text="${instalacao.estado}"></span>
+                            <span th:case="'ADIADA'"    class="status-badge status-warning" th:text="${instalacao.estado}"></span>
+                            <span th:case="*"           class="status-badge status-neutral" th:text="${instalacao.estado}"></span>
+                        </span>
+                    </td>
+                    <td class="text-muted cell-wrap" th:text="${instalacao.observacoes}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
 </body>
 </html>

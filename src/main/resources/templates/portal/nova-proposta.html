@@ -6,50 +6,65 @@
 </head>
 <body>
 <main>
-    <h1 class="mb-4">Nova Proposta de Aluguer</h1>
-    <p class="text-muted mb-4">
-        Selecione a vending machine pretendida, indique o valor mensal que propõe pagar
-        e adicione quaisquer observações relevantes. O gestor irá rever e responder.
-    </p>
+    <div class="section-head">
+        <h5 class="fw-bold">Nova Proposta de Aluguer</h5>
+        <a class="btn btn-outline-secondary btn-sm" href="/portal/propostas">
+            <i class="bi bi-arrow-left me-1"></i> Voltar
+        </a>
+    </div>
 
-    <form action="/portal/propostas/submeter" method="post" style="max-width: 600px;">
+    <div class="surface-card" style="max-width: 640px;">
+        <div class="card-pad">
+            <p class="text-muted">
+                Selecione a vending machine pretendida, indique o valor mensal que propõe pagar
+                e adicione quaisquer observações relevantes. O gestor irá rever e responder.
+            </p>
 
-        <div class="mb-3">
-            <label class="form-label">Vending Machine</label>
-            <select class="form-select" name="vendingMachineId" required>
-                <option value="">-- Selecionar --</option>
-                <option th:each="vm : ${vendingMachines}"
-                        th:value="${vm.id}"
-                        th:text="${vm.codigo + ' — ' + vm.modelo + ' (' + vm.estado + ')'}" >
-                </option>
-            </select>
+            <form action="/portal/propostas/submeter" method="post">
+
+                <div class="mb-3">
+                    <label class="form-label">Vending Machine</label>
+                    <select class="form-select" name="vendingMachineId" required>
+                        <option value="">-- Selecionar --</option>
+                        <option th:each="vm : ${vendingMachines}"
+                                th:value="${vm.id}"
+                                th:text="${vm.codigo + ' — ' + vm.modelo + ' (' + vm.estado + ')'}" >
+                        </option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Valor mensal proposto (€)</label>
+                    <input class="form-control" type="number" step="0.01" name="valorProposto"
+                           min="0" required placeholder="Ex: 150.00">
+                    <div class="form-text">Indique o valor que pretende pagar por mês.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Duração do contrato</label>
+                    <select class="form-select" name="duracaoAnos" required>
+                        <option value="">-- Selecionar --</option>
+                        <option value="1">1 ano</option>
+                        <option value="2">2 anos</option>
+                        <option value="3">3 anos</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Observações (opcional)</label>
+                    <textarea class="form-control" name="observacoes" rows="3"
+                              placeholder="Informação adicional para o gestor…"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send me-1"></i> Submeter Proposta
+                    </button>
+                    <a class="btn btn-outline-secondary" href="/portal/propostas">Cancelar</a>
+                </div>
+            </form>
         </div>
-
-        <div class="mb-3">
-            <label class="form-label">Valor mensal proposto (€)</label>
-            <input class="form-control" type="number" step="0.01" name="valorProposto"
-                   min="0" required placeholder="Ex: 150.00">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Duração do contrato</label>
-            <select class="form-select" name="duracaoAnos" required>
-                <option value="">-- Selecionar --</option>
-                <option value="1">1 ano</option>
-                <option value="2">2 anos</option>
-                <option value="3">3 anos</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Observações (opcional)</label>
-            <textarea class="form-control" name="observacoes" rows="3"
-                      placeholder="Informação adicional para o gestor…"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Submeter Proposta</button>
-        <a class="btn btn-secondary" href="/portal/propostas">Cancelar</a>
-    </form>
+    </div>
 </main>
 </body>
 </html>

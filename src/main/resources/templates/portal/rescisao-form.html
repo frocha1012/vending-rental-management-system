@@ -6,22 +6,29 @@
 </head>
 <body>
 <main>
-    <h1 class="mb-1">Pedir Rescisão de Contrato</h1>
-    <p class="text-muted mb-4">
+    <div class="section-head">
+        <h5 class="fw-bold">Pedir Rescisão de Contrato</h5>
+        <a class="btn btn-outline-secondary btn-sm" href="/portal/contratos">
+            <i class="bi bi-arrow-left me-1"></i> Voltar
+        </a>
+    </div>
+
+    <p class="text-muted mb-3">
         Contrato <strong th:text="${contrato.id}"></strong> —
         <span th:text="${contrato.vendingMachine.codigo + ' ' + contrato.vendingMachine.modelo}"></span>
     </p>
 
-    <div class="alert alert-warning">
+    <div class="alert alert-warning" style="max-width: 600px;">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i>
         <strong>Atenção:</strong> Este pedido será analisado pelo gestor. O contrato permanece ativo até ser aprovado.
     </div>
 
-    <div class="card" style="max-width: 560px;">
-        <div class="card-body">
+    <div class="surface-card" style="max-width: 600px;">
+        <div class="card-pad">
             <form th:action="@{/portal/contratos/{id}/rescisao(id=${contrato.id})}" method="post">
 
                 <div class="mb-3">
-                    <label for="motivo" class="form-label fw-semibold">Motivo</label>
+                    <label for="motivo" class="form-label">Motivo</label>
                     <select id="motivo" name="motivo" class="form-select" required>
                         <option value="">— Selecione um motivo —</option>
                         <option th:each="m : ${motivos}"
@@ -30,14 +37,16 @@
                     </select>
                 </div>
 
-                <div class="mb-3">
-                    <label for="descricao" class="form-label fw-semibold">Descrição (opcional)</label>
+                <div class="mb-4">
+                    <label for="descricao" class="form-label">Descrição (opcional)</label>
                     <textarea id="descricao" name="descricao" class="form-control" rows="4"
                               placeholder="Descreva o motivo com mais detalhe..."></textarea>
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-danger">Submeter Pedido</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-send me-1"></i> Submeter Pedido
+                    </button>
                     <a th:href="@{/portal/contratos}" class="btn btn-outline-secondary">Cancelar</a>
                 </div>
             </form>

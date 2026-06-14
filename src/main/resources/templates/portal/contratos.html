@@ -6,59 +6,69 @@
 </head>
 <body>
 <main>
-    <h1 class="mb-4">Os meus Contratos</h1>
+    <div class="section-head">
+        <h5 class="fw-bold">Os meus Contratos</h5>
+    </div>
 
     <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${sucesso}"></span>
+        <i class="bi bi-check-circle-fill me-1"></i><span th:text="${sucesso}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${erro}"></span>
+        <i class="bi bi-exclamation-triangle-fill me-1"></i><span th:text="${erro}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div th:if="${#lists.isEmpty(contratos)}" class="alert alert-info">
-        Não tem contratos registados.
+    <div th:if="${#lists.isEmpty(contratos)}" class="surface-card">
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-file-earmark-check"></i></div>
+            <h6>Não tem contratos registados</h6>
+            <p class="mb-0">Os contratos aparecem aqui depois de aceitar uma proposta.</p>
+        </div>
     </div>
 
-    <table th:unless="${#lists.isEmpty(contratos)}" class="table table-striped align-middle">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Vending Machine</th>
-            <th>Data Início</th>
-            <th>Data Fim</th>
-            <th>Valor Mensal</th>
-            <th>Estado</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="contrato : ${contratos}">
-            <td th:text="${contrato.id}"></td>
-            <td th:text="${contrato.vendingMachine.codigo + ' — ' + contrato.vendingMachine.modelo}"></td>
-            <td th:text="${contrato.dataInicio}"></td>
-            <td th:text="${contrato.dataFim}"></td>
-            <td th:text="${contrato.valorMensal + ' €'}"></td>
-            <td>
-                <span class="badge"
-                      th:classappend="${contrato.estado == ATIVO} ? 'bg-success' : 'bg-secondary'"
-                      th:text="${contrato.estado}"></span>
-            </td>
-            <td>
-                <!-- Active contract with no pending request: show button -->
-                <a th:if="${contrato.estado == ATIVO and !comPedidoPendente.contains(contrato.id)}"
-                   th:href="@{/portal/contratos/{id}/rescisao(id=${contrato.id})}"
-                   class="btn btn-sm btn-outline-danger">
-                    Pedir Rescisão
-                </a>
-                <!-- Active contract already has pending request -->
-                <span th:if="${contrato.estado == ATIVO and comPedidoPendente.contains(contrato.id)}"
-                      class="badge bg-warning text-dark">Pedido Pendente</span>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <div th:unless="${#lists.isEmpty(contratos)}" class="surface-card table-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Vending Machine</th>
+                    <th>Data Início</th>
+                    <th>Data Fim</th>
+                    <th>Valor Mensal</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="contrato : ${contratos}">
+                    <td class="text-muted" th:text="${contrato.id}"></td>
+                    <td class="fw-semibold" th:text="${contrato.vendingMachine.codigo + ' — ' + contrato.vendingMachine.modelo}"></td>
+                    <td class="text-muted" th:text="${contrato.dataInicio}"></td>
+                    <td class="text-muted" th:text="${contrato.dataFim}"></td>
+                    <td th:text="${contrato.valorMensal + ' €'}"></td>
+                    <td>
+                        <span class="status-badge"
+                              th:classappend="${contrato.estado == ATIVO} ? 'status-success' : 'status-neutral'"
+                              th:text="${contrato.estado}"></span>
+                    </td>
+                    <td class="text-end">
+                        <!-- Active contract with no pending request: show button -->
+                        <a th:if="${contrato.estado == ATIVO and !comPedidoPendente.contains(contrato.id)}"
+                           th:href="@{/portal/contratos/{id}/rescisao(id=${contrato.id})}"
+                           class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-x-circle me-1"></i> Pedir Rescisão
+                        </a>
+                        <!-- Active contract already has pending request -->
+                        <span th:if="${contrato.estado == ATIVO and comPedidoPendente.contains(contrato.id)}"
+                              class="status-badge status-warning">Pedido Pendente</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
 </body>
 </html>
