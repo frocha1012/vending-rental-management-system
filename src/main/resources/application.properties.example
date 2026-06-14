@@ -1,0 +1,26 @@
+spring.application.name=vending-rental
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/vending_rental
+spring.datasource.username=postgres
+spring.datasource.password=your_db_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+server.port=8080
+
+spring.thymeleaf.cache=false
+
+# ── Mail (SMTP) ───────────────────────────────────────────────────────────────
+# Copy this file to application.properties and fill in real values.
+# Mailjet: https://app.mailjet.com -> Account Settings -> API Key Management
+spring.mail.host=in-v3.mailjet.com
+spring.mail.port=587
+spring.mail.username=your_mailjet_api_key
+spring.mail.password=your_mailjet_secret_key
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+# Must be a verified Mailjet sender address
+app.mail.from=noreply@yourdomain.pt
