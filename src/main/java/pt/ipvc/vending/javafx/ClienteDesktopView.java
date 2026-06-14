@@ -6,6 +6,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -138,9 +139,9 @@ public class ClienteDesktopView {
         TextField telefoneField = new TextField(cliente.getTelefone() != null ? cliente.getTelefone() : "");
         TextField nifField      = new TextField(cliente.getNif()      != null ? cliente.getNif()      : "");
         TextField usernameField = new TextField(cliente.getUsername() != null ? cliente.getUsername() : "");
-        TextField passwordField = new TextField(cliente.getPassword() != null ? cliente.getPassword() : "");
+        PasswordField passwordField = new PasswordField();
         usernameField.setPromptText("username para o portal (opcional)");
-        passwordField.setPromptText("password para o portal (opcional)");
+        passwordField.setPromptText(existing != null ? "Deixar em branco para manter" : "password para o portal (opcional)");
 
         ComboBox<EstadoCliente> estadoBox = new ComboBox<>(
                 FXCollections.observableArrayList(EstadoCliente.values()));

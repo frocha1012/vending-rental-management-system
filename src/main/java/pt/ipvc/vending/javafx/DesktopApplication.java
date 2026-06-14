@@ -3,6 +3,7 @@ package pt.ipvc.vending.javafx;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import pt.ipvc.vending.domain.enums.BackOfficeRole;
 import pt.ipvc.vending.service.AuditContext;
 
 public class DesktopApplication extends Application {
@@ -13,24 +14,32 @@ public class DesktopApplication extends Application {
     @Override
     public void start(Stage stage) {
         stage.setTitle("Vending Rental — Backoffice");
-        showRoleSelection(stage);
+        showLogin(stage);
         stage.show();
     }
 
-    private void showRoleSelection(Stage stage) {
-        RoleSelectionView selectionView = new RoleSelectionView(
-                role -> showMainView(stage, role));
-        stage.setScene(new Scene(selectionView.getRoot(), WIDTH, HEIGHT));
+    private void showLogin(Stage stage) {
+        LoginDesktopView loginView = new LoginDesktopView(role -> showMainView(stage, role));
+        stage.setScene(new Scene(loginView.getRoot(), WIDTH, HEIGHT));
         stage.setTitle("Vending Rental — Backoffice");
     }
 
-    private void showMainView(Stage stage, BackofficeRole role) {
-        AuditContext.setActor(role.name(), role.getLabel());
+    private void showMainView(Stage stage, BackOfficeRole role) {
+        AuditContext.setActor(role.name(), BackOfficeSession.getUsername());
         RoleTheme.setCurrent(RoleTheme.forRole(role));
+
         DesktopMainView mainView = new DesktopMainView(
-                stage, role, () -> showRoleSelection(stage));
+                stage,
+                BackofficeRole.fromDomain(role),
+                () -> {
+                    BackOfficeSession.logout();
+                    AuditContext.clear();
+                    showLogin(stage);
+                });
+
         stage.setScene(new Scene(mainView.getRoot(), WIDTH, HEIGHT));
-        stage.setTitle("Vending Rental — Backoffice  [" + role.getLabel() + "]");
+        stage.setTitle("Vending Rental — Backoffice  ["
+                + BackOfficeSession.getUsername() + " · " + role.getLabel() + "]");
     }
 
     @Override

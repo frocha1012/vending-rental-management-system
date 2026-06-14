@@ -94,9 +94,14 @@ public class RoleTheme {
     public static RoleTheme forRole(BackofficeRole role) {
         return switch (role) {
             case ADMIN        -> new RoleTheme("#2980b9", "#eaf4fb", "#d6eaf8", "#1a5276");
-            case MANAGER      -> new RoleTheme("#27ae60", "#eafaf1", "#d5f5e3", "#196f3d");
+            case GESTOR       -> new RoleTheme("#27ae60", "#eafaf1", "#d5f5e3", "#196f3d");
             case RECECIONISTA -> new RoleTheme("#8e44ad", "#f5eafb", "#e8daef", "#5b2c6f");
             case TECNICO      -> new RoleTheme("#d35400", "#fdf2e9", "#fde5d0", "#a04000");
         };
+    }
+
+    /** Overload accepting the domain enum so LoginDesktopView can call it directly. */
+    public static RoleTheme forRole(pt.ipvc.vending.domain.enums.BackOfficeRole role) {
+        return forRole(BackofficeRole.fromDomain(role));
     }
 }
