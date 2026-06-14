@@ -97,12 +97,15 @@ public class PortalController {
                               @RequestParam String email,
                               @RequestParam(required = false) String telefone,
                               @RequestParam(required = false) String morada,
+                              @RequestParam(required = false) String passwordAtual,
                               @RequestParam(required = false) String novaPassword,
+                              @RequestParam(required = false) String confirmarPassword,
                               RedirectAttributes redirectAttributes) {
         Long clienteId = (Long) session.getAttribute("clienteId");
         setWebActor(session);
         try {
-            clienteService.atualizarDadosProprios(clienteId, email, telefone, morada, novaPassword);
+            clienteService.atualizarDadosProprios(clienteId, email, telefone, morada,
+                    passwordAtual, novaPassword, confirmarPassword);
             redirectAttributes.addFlashAttribute("sucesso",
                     "Os seus dados foram atualizados com sucesso.");
         } catch (IllegalArgumentException ex) {

@@ -94,16 +94,28 @@
 
                         <hr class="my-3">
 
-                        <div class="mb-1">
-                            <label for="novaPassword" class="form-label fw-semibold">
-                                Nova password do portal
-                            </label>
+                        <p class="fw-semibold mb-2">Alterar password do portal</p>
+                        <div class="form-text mb-3">
+                            Deixe todos os campos em branco para não alterar a password.
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="passwordAtual" class="form-label">Password atual</label>
+                            <input type="password" id="passwordAtual" name="passwordAtual"
+                                   class="form-control" autocomplete="current-password"
+                                   placeholder="Obrigatória para alterar a password">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="novaPassword" class="form-label">Nova password</label>
                             <input type="password" id="novaPassword" name="novaPassword"
-                                   class="form-control" placeholder="Deixe em branco para não alterar">
-                            <div class="form-text">
-                                A password é utilizada para aceder a este portal.
-                                Deixe vazio se não quiser alterar.
-                            </div>
+                                   class="form-control" autocomplete="new-password">
+                        </div>
+
+                        <div class="mb-1">
+                            <label for="confirmarPassword" class="form-label">Confirmar nova password</label>
+                            <input type="password" id="confirmarPassword" name="confirmarPassword"
+                                   class="form-control" autocomplete="new-password">
                         </div>
 
                         <div class="d-flex gap-2 mt-4">
