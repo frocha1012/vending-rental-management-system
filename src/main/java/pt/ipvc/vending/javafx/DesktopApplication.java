@@ -8,8 +8,8 @@ import pt.ipvc.vending.service.AuditContext;
 
 public class DesktopApplication extends Application {
 
-    private static final double WIDTH  = 960;
-    private static final double HEIGHT = 600;
+    private static final double WIDTH  = 1280;
+    private static final double HEIGHT = 720;
 
     @Override
     public void start(Stage stage) {
