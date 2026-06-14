@@ -16,17 +16,18 @@ The system is composed of two complementary applications that share the same dom
 3. [Architecture](#architecture)
 4. [Role Permissions Matrix](#role-permissions-matrix)
 5. [Business Workflow](#business-workflow)
-6. [Domain States](#domain-states)
-7. [Installation](#installation)
-8. [PostgreSQL Setup](#postgresql-setup)
-9. [Building with Maven](#building-with-maven)
-10. [Running the Web Application (FrontOffice)](#running-the-web-application-frontoffice)
-11. [Running the Desktop Application (BackOffice)](#running-the-desktop-application-backoffice)
-12. [Example Credentials](#example-credentials)
-13. [Project Structure](#project-structure)
-14. [Technologies](#technologies)
-15. [Future Improvements](#future-improvements)
-16. [Authors](#authors)
+6. [Domain Model](#domain-model)
+7. [Domain States](#domain-states)
+8. [Installation](#installation)
+9. [PostgreSQL Setup](#postgresql-setup)
+10. [Building with Maven](#building-with-maven)
+11. [Running the Web Application (FrontOffice)](#running-the-web-application-frontoffice)
+12. [Running the Desktop Application (BackOffice)](#running-the-desktop-application-backoffice)
+13. [Example Credentials](#example-credentials)
+14. [Project Structure](#project-structure)
+15. [Technologies](#technologies)
+16. [Future Improvements](#future-improvements)
+17. [Authors](#authors)
 
 ---
 
@@ -262,6 +263,256 @@ sequenceDiagram
         C->>M: Counter-proposal (CONTRAPROPOSTA)
         M->>C: Re-price and resend
     end
+```
+
+---
+
+## Domain Model
+
+All entities use `@GeneratedValue(strategy = GenerationType.IDENTITY)` for their primary key and `@Enumerated(EnumType.STRING)` for all enum fields. No cascade settings are defined on any relationship — all lifecycle management is handled explicitly in the service layer.
+
+---
+
+### Entity: Cliente
+
+**Table:** `clientes`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `nome` | `String` | NOT NULL |
+| `email` | `String` | NOT NULL, UNIQUE |
+| `telefone` | `String` | nullable |
+| `morada` | `String` | nullable |
+| `nif` | `String` | NOT NULL, UNIQUE |
+| `estado` | `EstadoCliente` | NOT NULL, default `ATIVO` |
+| `dataRegisto` | `LocalDate` | NOT NULL, default today |
+| `username` | `String` | UNIQUE, nullable |
+| `password` | `String` | nullable |
+
+**Enums:** `EstadoCliente` — `ATIVO`, `INATIVO`, `SUSPENSO`
+
+**Relationships:** none (referenced by `Proposta`, `Contrato`, `PasswordResetToken`)
+
+---
+
+### Entity: VendingMachine
+
+**Table:** `vending_machines`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `codigo` | `String` | NOT NULL, UNIQUE |
+| `modelo` | `String` | NOT NULL |
+| `localizacao` | `String` | nullable |
+| `estado` | `EstadoVendingMachine` | NOT NULL, default `DISPONIVEL` |
+| `precoAluguerMensal` | `BigDecimal` | NOT NULL |
+
+**Enums:** `EstadoVendingMachine` — `DISPONIVEL`, `ALUGADA`, `MANUTENCAO`, `FORA_SERVICO`
+
+**Relationships:** none (referenced by `Proposta`, `Contrato`)
+
+---
+
+### Entity: Proposta
+
+**Table:** `propostas`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `cliente` | `Cliente` | FK `cliente_id`, NOT NULL |
+| `vendingMachine` | `VendingMachine` | FK `vending_machine_id`, NOT NULL |
+| `dataProposta` | `LocalDate` | NOT NULL, default today |
+| `valorProposto` | `BigDecimal` | NOT NULL |
+| `estado` | `EstadoProposta` | NOT NULL, default `PENDENTE` |
+| `observacoes` | `String` | nullable |
+| `valorGestor` | `BigDecimal` | nullable |
+| `observacoesGestor` | `String` | nullable |
+| `duracaoAnos` | `Integer` | nullable |
+
+**Enums:** `EstadoProposta` — `PENDENTE`, `EM_ANALISE`, `ENVIADA_CLIENTE`, `ACEITE`, `REJEITADA`, `CONTRAPROPOSTA`, `EXPIRADA`
+
+**Relationships:**
+- `@ManyToOne(fetch = LAZY)` → `Cliente` via `cliente_id` — many proposals per client
+- `@ManyToOne(fetch = LAZY)` → `VendingMachine` via `vending_machine_id` — many proposals per machine
+
+---
+
+### Entity: Contrato
+
+**Table:** `contratos`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `cliente` | `Cliente` | FK `cliente_id`, NOT NULL |
+| `vendingMachine` | `VendingMachine` | FK `vending_machine_id`, NOT NULL |
+| `dataInicio` | `LocalDate` | NOT NULL |
+| `dataFim` | `LocalDate` | nullable |
+| `valorMensal` | `BigDecimal` | NOT NULL |
+| `estado` | `EstadoContrato` | NOT NULL, default `RASCUNHO` |
+
+**Enums:** `EstadoContrato` — `RASCUNHO`, `ATIVO`, `SUSPENSO`, `TERMINADO`
+
+**Relationships:**
+- `@ManyToOne(fetch = LAZY)` → `Cliente` via `cliente_id` — many contracts per client
+- `@ManyToOne(fetch = LAZY)` → `VendingMachine` via `vending_machine_id` — many contracts per machine
+
+---
+
+### Entity: Instalacao
+
+**Table:** `instalacoes`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `contrato` | `Contrato` | FK `contrato_id`, NOT NULL |
+| `dataInstalacao` | `LocalDate` | NOT NULL |
+| `localInstalacao` | `String` | NOT NULL |
+| `estado` | `EstadoInstalacao` | NOT NULL, default `AGENDADA` |
+| `observacoes` | `String` | nullable |
+| `dataConclusao` | `LocalDate` | nullable, set on completion |
+| `motivoAdiamento` | `MotivoAdiamento` | nullable, set on postponement |
+| `novaDataAgendada` | `LocalDate` | nullable, set on postponement |
+
+**Enums:**
+- `EstadoInstalacao` — `AGENDADA`, `EM_CURSO`, `CONCLUIDA`, `CANCELADA`, `ADIADA`
+- `MotivoAdiamento` — `CLIENTE_AUSENTE`, `PROBLEMA_TECNICO`, `ACESSO_INDISPONIVEL`, `MAQUINA_NAO_ENTREGUE`, `OUTRO`
+
+**Relationships:**
+- `@ManyToOne(fetch = LAZY)` → `Contrato` via `contrato_id` — many installations per contract
+
+---
+
+### Entity: PedidoRescisaoContrato
+
+**Table:** `pedidos_rescisao`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `contrato` | `Contrato` | FK `contrato_id`, NOT NULL |
+| `motivo` | `MotivoRescisao` | NOT NULL |
+| `descricao` | `String` | nullable |
+| `dataPedido` | `LocalDate` | NOT NULL, default today |
+| `estado` | `EstadoPedidoRescisao` | NOT NULL, default `PENDENTE` |
+
+**Enums:**
+- `MotivoRescisao` — `INSATISFACAO_SERVICO`, `PRECO_ELEVADO`, `JA_NAO_NECESSITA`, `PROBLEMAS_TECNICOS`, `OUTRO`
+- `EstadoPedidoRescisao` — `PENDENTE`, `APROVADO`, `REJEITADO`
+
+**Relationships:**
+- `@ManyToOne(fetch = LAZY)` → `Contrato` via `contrato_id` — many termination requests per contract
+
+---
+
+### Entity: AccountRequest
+
+**Table:** `account_requests`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `nome` | `String` | NOT NULL |
+| `nif` | `String` | NOT NULL |
+| `email` | `String` | NOT NULL |
+| `telefone` | `String` | nullable |
+| `morada` | `String` | nullable |
+| `usernameRequested` | `String` | NOT NULL, UNIQUE |
+| `passwordHash` | `String` | NOT NULL |
+| `estado` | `EstadoAccountRequest` | NOT NULL, default `PENDENTE` |
+| `dataPedido` | `LocalDate` | NOT NULL, default today |
+| `observacoes` | `String` | nullable |
+
+**Enums:** `EstadoAccountRequest` — `PENDENTE`, `APROVADO`, `REJEITADO`
+
+**Relationships:** none (standalone — approved requests create a `Cliente`)
+
+---
+
+### Entity: BackOfficeUser
+
+**Table:** `backoffice_users`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `username` | `String` | NOT NULL, UNIQUE |
+| `passwordHash` | `String` | NOT NULL |
+| `role` | `BackOfficeRole` | NOT NULL |
+| `active` | `boolean` | NOT NULL, default `true` |
+| `createdAt` | `LocalDateTime` | NOT NULL, default now |
+
+**Enums:** `BackOfficeRole` — `ADMIN`, `GESTOR`, `RECECIONISTA`, `TECNICO`
+
+**Relationships:** none
+
+---
+
+### Entity: PasswordResetToken
+
+**Table:** `password_reset_tokens`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `token` | `String` | NOT NULL, UNIQUE |
+| `cliente` | `Cliente` | FK `cliente_id`, NOT NULL |
+| `expiresAt` | `LocalDateTime` | NOT NULL |
+| `used` | `boolean` | NOT NULL, default `false` |
+| `createdAt` | `LocalDateTime` | NOT NULL, default now |
+
+**Enums:** none
+
+**Relationships:**
+- `@ManyToOne(fetch = LAZY)` → `Cliente` via `cliente_id` — many tokens per client
+
+---
+
+### Entity: AuditLog
+
+**Table:** `audit_logs`
+
+| Field | Type | Constraint |
+|-------|------|-----------|
+| `id` | `Long` | PK, auto-increment |
+| `timestamp` | `LocalDateTime` | NOT NULL, default now |
+| `actorRole` | `String` | NOT NULL |
+| `actorName` | `String` | NOT NULL |
+| `action` | `AuditAction` | NOT NULL |
+| `entityName` | `String` | nullable |
+| `entityId` | `Long` | nullable |
+| `description` | `String` | max 500 chars, nullable |
+| `oldValue` | `TEXT` | nullable |
+| `newValue` | `TEXT` | nullable |
+
+**Enums:** `AuditAction` — `CREATE`, `UPDATE`, `DELETE`, `STATUS_CHANGE`, `LOGIN`, `LOGIN_FAILED`, `LOGOUT`, `ACCEPT`, `REJECT`, `COUNTER_PROPOSAL`, `TERMINATION_REQUEST`, `INSTALLATION_COMPLETED`, `INSTALLATION_DELAYED`, `ACCOUNT_REQUEST_SUBMITTED`, `ACCOUNT_REQUEST_APPROVED`, `ACCOUNT_REQUEST_REJECTED`, `PASSWORD_RESET_REQUESTED`, `PASSWORD_RESET_COMPLETED`, `PASSWORD_RESET_FAILED`
+
+**Relationships:** none — references other entities via `entityName` (String) + `entityId` (Long) to avoid hard FK coupling.
+
+---
+
+### Entity Relationship Overview
+
+```
+Cliente ──────────────────── Proposta ──── VendingMachine
+   │         (ManyToOne)        │              │
+   │                            │ (ManyToOne)  │
+   │         (ManyToOne)        ▼              │
+   ├──────────────────────── Contrato ─────────┘
+   │                            │
+   │                            ├─── (ManyToOne) ── Instalacao
+   │                            │
+   │                            └─── (ManyToOne) ── PedidoRescisaoContrato
+   │
+   └─── (ManyToOne) ── PasswordResetToken
+
+AccountRequest   (standalone — approved → creates Cliente)
+BackOfficeUser   (standalone — internal staff)
+AuditLog         (standalone — soft ref via entityName + entityId)
 ```
 
 ---
