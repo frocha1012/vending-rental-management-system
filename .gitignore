@@ -1,5 +1,7 @@
 NOTES.md
+docs/
 target/
+src/main/resources/application.properties
 *.class
 *.jar
 *.war

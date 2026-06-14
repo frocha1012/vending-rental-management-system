@@ -110,18 +110,122 @@ flowchart TD
 
 ## Role Permissions Matrix
 
-| Capability | Administrator | Manager | Receptionist | Technician |
-|------------|:-------------:|:-------:|:------------:|:----------:|
-| Manage Clients (CRUD) | ✅ | ❌ | ✅ (no delete) | ❌ |
-| Create Portal Credentials | ✅ | ❌ | ✅ | ❌ |
-| Manage Vending Machines | ✅ | ❌ | ❌ | ❌ |
-| Manage Proposals (price / negotiate) | ✅ | ✅ | 👁️ Read-only | ❌ |
-| Manage Contracts | ✅ | ✅ | 👁️ Read-only | ❌ |
-| Manage Installations | ✅ | ✅ | ❌ | ✅ |
-| Complete / Postpone Installations | ✅ | ✅ | ❌ | ✅ |
-| Review Termination Requests | ✅ | ✅ | ❌ | ❌ |
+Permission enforcement is split across two layers:
 
-**Legend:** ✅ Full access · 👁️ Read-only · ❌ No access
+1. **Navigation layer** (`DesktopMainView`) — the primary gate. Each role receives a fixed set of menu items at login; unreachable screens are never instantiated.
+2. **View layer** — a secondary, partial gate. `ClienteDesktopView` checks the role explicitly at runtime. `ContratoDesktopView` and `PropostaDesktopView` receive a `readOnly` boolean from the caller. All other views perform no internal role checks and trust the navigation gate entirely.
+
+Each role has a distinct colour scheme applied throughout the desktop UI:
+
+| Role | Theme Colour |
+|------|-------------|
+| Administrador | Blue (`#2980b9`) |
+| Gestor | Green (`#27ae60`) |
+| Rececionista | Purple (`#8e44ad`) |
+| Técnico | Orange (`#d35400`) |
+
+### ADMIN (Administrador)
+
+The only role with access to all non-TECNICO screens. When creating users, the role picker is restricted to `GESTOR`, `RECECIONISTA`, and `TECNICO` — a second ADMIN **cannot** be created through the UI.
+
+**Visible menu items:** Gerir Clientes, Gerir Vending Machines, Gerir Propostas, Gerir Contratos, Gerir Instalações, Pedidos Rescisão, Pedidos de Conta, Audit Logs, Utilizadores.
+
+| Screen | View | Create | Edit | Delete | Approve / Reject | Complete / Postpone | Reset Password |
+|--------|:----:|:------:|:----:|:------:|:----------------:|:-------------------:|:--------------:|
+| Clientes | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Vending Machines | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Propostas | ✅ | — | ✅ | — | — | — | — |
+| Contratos | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Instalações | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Pedidos Rescisão | ✅ | — | — | — | ✅ | — | — |
+| Pedidos de Conta | ✅ | — | — | — | ✅ | — | — |
+| Audit Logs | ✅ | — | — | — | — | — | — |
+| Utilizadores | ✅ | ✅ | ✅ | — | — | — | ✅ |
+
+### GESTOR (Gestor)
+
+Shares the same full-CRUD views as ADMIN for Proposals, Contracts, Installations, and Termination Requests. No access to Clients, Vending Machines, Audit Logs, or User Management.
+
+**Visible menu items:** Gerir Propostas, Gerir Contratos, Gerir Instalações, Pedidos Rescisão, Pedidos de Conta.
+
+| Screen | View | Create | Edit | Delete | Approve / Reject | Complete / Postpone | Reset Password |
+|--------|:----:|:------:|:----:|:------:|:----------------:|:-------------------:|:--------------:|
+| Propostas | ✅ | — | ✅ | — | — | — | — |
+| Contratos | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Instalações | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Pedidos Rescisão | ✅ | — | — | — | ✅ | — | — |
+| Pedidos de Conta | ✅ | — | — | — | ✅ | — | — |
+
+### RECECIONISTA (Rececionista)
+
+Can create and edit clients but the Delete button is rendered disabled (50% opacity + tooltip). Contracts and Proposals open in **read-only mode** — a lock icon is shown in the heading and only a Refresh button is rendered; all action buttons are never instantiated.
+
+**Visible menu items:** Gerir Clientes, Ver Contratos (read-only), Ver Propostas (read-only), Pedidos de Conta.
+
+| Screen | View | Create | Edit | Delete | Approve / Reject | Complete / Postpone | Reset Password |
+|--------|:----:|:------:|:----:|:------:|:----------------:|:-------------------:|:--------------:|
+| Clientes | ✅ | ✅ | ✅ | ❌ ¹ | — | — | — |
+| Contratos | 🔒 | — | — | — | — | — | — |
+| Propostas | 🔒 | — | — | — | — | — | — |
+| Pedidos de Conta | ✅ | — | — | — | ✅ | — | — |
+
+> ¹ Delete is rendered but disabled with tooltip: *"Rececionista não tem permissão para eliminar clientes."*
+> 🔒 Read-only mode — heading shows a lock icon; only Refresh is available.
+
+### TECNICO (Técnico)
+
+Completely isolated from all commercial and administrative roles. The only role that auto-redirects to its screen on login with no home/welcome screen. Uses `TecnicoInstalacaoView` — a separate class from the management view — exposing only Complete and Postpone actions.
+
+**Visible menu items:** Instalações (Técnico).
+
+| Screen | View | Create | Edit | Delete | Approve / Reject | Complete / Postpone | Reset Password |
+|--------|:----:|:------:|:----:|:------:|:----------------:|:-------------------:|:--------------:|
+| Instalações (técnico) | ✅ | — | — | — | — | ✅ ² | — |
+
+> ² Buttons are enabled/disabled based on installation state (`AGENDADA`), not the role itself.
+
+### Full Permissions Matrix
+
+| Feature / Action | ADMIN | GESTOR | RECECIONISTA | TECNICO |
+|---|:---:|:---:|:---:|:---:|
+| Clientes — Ver | ✅ | ❌ | ✅ | ❌ |
+| Clientes — Criar | ✅ | ❌ | ✅ | ❌ |
+| Clientes — Editar | ✅ | ❌ | ✅ | ❌ |
+| Clientes — Eliminar | ✅ | ❌ | ❌ | ❌ |
+| Vending Machines — Ver | ✅ | ❌ | ❌ | ❌ |
+| Vending Machines — Criar | ✅ | ❌ | ❌ | ❌ |
+| Vending Machines — Editar | ✅ | ❌ | ❌ | ❌ |
+| Vending Machines — Eliminar | ✅ | ❌ | ❌ | ❌ |
+| Propostas — Ver | ✅ | ✅ | 🔒 | ❌ |
+| Propostas — Analisar / Enviar | ✅ | ✅ | ❌ | ❌ |
+| Contratos — Ver | ✅ | ✅ | 🔒 | ❌ |
+| Contratos — Criar | ✅ | ✅ | ❌ | ❌ |
+| Contratos — Editar | ✅ | ✅ | ❌ | ❌ |
+| Contratos — Eliminar | ✅ | ✅ | ❌ | ❌ |
+| Instalações (gestão) — Ver | ✅ | ✅ | ❌ | ❌ |
+| Instalações (gestão) — Criar | ✅ | ✅ | ❌ | ❌ |
+| Instalações (gestão) — Editar | ✅ | ✅ | ❌ | ❌ |
+| Instalações (gestão) — Eliminar | ✅ | ✅ | ❌ | ❌ |
+| Instalações (técnico) — Ver | ❌ | ❌ | ❌ | ✅ |
+| Instalações (técnico) — Concluir | ❌ | ❌ | ❌ | ✅ |
+| Instalações (técnico) — Adiar | ❌ | ❌ | ❌ | ✅ |
+| Pedidos Rescisão — Ver | ✅ | ✅ | ❌ | ❌ |
+| Pedidos Rescisão — Aprovar / Rejeitar | ✅ | ✅ | ❌ | ❌ |
+| Pedidos de Conta — Ver | ✅ | ✅ | ✅ | ❌ |
+| Pedidos de Conta — Aprovar / Rejeitar | ✅ | ✅ | ✅ | ❌ |
+| Audit Logs — Ver | ✅ | ❌ | ❌ | ❌ |
+| Utilizadores — Ver | ✅ | ❌ | ❌ | ❌ |
+| Utilizadores — Criar | ✅ | ❌ | ❌ | ❌ |
+| Utilizadores — Ativar / Desativar | ✅ | ❌ | ❌ | ❌ |
+| Utilizadores — Repor Password | ✅ | ❌ | ❌ | ❌ |
+
+**Legend:** ✅ Full access · 🔒 Read-only · ❌ No access
+
+### Role Relationships
+
+- **ADMIN** is a superset of GESTOR, and additionally has Clientes, Vending Machines, Audit Logs, and Utilizadores.
+- **GESTOR** and **RECECIONISTA** are not hierarchically related. Their only shared screen is Pedidos de Conta.
+- **TECNICO** is fully isolated — no shared screens with any other role.
 
 ---
 
