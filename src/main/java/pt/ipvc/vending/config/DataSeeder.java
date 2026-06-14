@@ -2,8 +2,12 @@ package pt.ipvc.vending.config;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import pt.ipvc.vending.domain.entity.Cliente;
+import pt.ipvc.vending.domain.enums.BackOfficeRole;
+import pt.ipvc.vending.repository.BackOfficeUserRepository;
+import pt.ipvc.vending.service.BackOfficeUserService;
 import pt.ipvc.vending.domain.entity.Contrato;
 import pt.ipvc.vending.domain.entity.Instalacao;
 import pt.ipvc.vending.domain.entity.Proposta;
@@ -31,24 +35,41 @@ public class DataSeeder implements CommandLineRunner {
     private final ContratoRepository contratoRepository;
     private final PropostaRepository propostaRepository;
     private final InstalacaoRepository instalacaoRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final BackOfficeUserService backOfficeUserService;
 
     public DataSeeder(ClienteRepository clienteRepository,
                       VendingMachineRepository vendingMachineRepository,
                       ContratoRepository contratoRepository,
                       PropostaRepository propostaRepository,
-                      InstalacaoRepository instalacaoRepository) {
+                      InstalacaoRepository instalacaoRepository,
+                      BCryptPasswordEncoder passwordEncoder,
+                      BackOfficeUserService backOfficeUserService) {
         this.clienteRepository = clienteRepository;
         this.vendingMachineRepository = vendingMachineRepository;
         this.contratoRepository = contratoRepository;
         this.propostaRepository = propostaRepository;
         this.instalacaoRepository = instalacaoRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.backOfficeUserService = backOfficeUserService;
     }
 
     @Override
     public void run(String... args) {
-        if (clienteRepository.count() > 0) {
-            return;
+        seedBackOfficeUsers();
+        if (clienteRepository.count() == 0) {
+            seedClientData();
         }
+    }
+
+    private void seedBackOfficeUsers() {
+        backOfficeUserService.seedIfAbsent("admin",         "admin123",         BackOfficeRole.ADMIN);
+        backOfficeUserService.seedIfAbsent("gestor",        "gestor123",        BackOfficeRole.GESTOR);
+        backOfficeUserService.seedIfAbsent("rececionista",  "rececionista123",  BackOfficeRole.RECECIONISTA);
+        backOfficeUserService.seedIfAbsent("tecnico",       "tecnico123",       BackOfficeRole.TECNICO);
+    }
+
+    private void seedClientData() {
 
         Cliente cliente1 = new Cliente();
         cliente1.setNome("Escola Secundaria de Viseu");
@@ -58,7 +79,7 @@ public class DataSeeder implements CommandLineRunner {
         cliente1.setEstado(EstadoCliente.ATIVO);
         cliente1.setDataRegisto(LocalDate.of(2024, 1, 15));
         cliente1.setUsername("escola");
-        cliente1.setPassword("1234");
+        cliente1.setPassword(passwordEncoder.encode("1234"));
         cliente1 = clienteRepository.save(cliente1);
 
         Cliente cliente2 = new Cliente();
@@ -69,7 +90,7 @@ public class DataSeeder implements CommandLineRunner {
         cliente2.setEstado(EstadoCliente.ATIVO);
         cliente2.setDataRegisto(LocalDate.of(2024, 3, 10));
         cliente2.setUsername("ginasio");
-        cliente2.setPassword("1234");
+        cliente2.setPassword(passwordEncoder.encode("1234"));
         cliente2 = clienteRepository.save(cliente2);
 
         VendingMachine vm1 = new VendingMachine();
