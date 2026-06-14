@@ -1,6 +1,7 @@
 package pt.ipvc.vending.web.controller;
 
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,11 +18,14 @@ public class LoginController {
 
     private final ClienteRepository clienteRepository;
     private final AuditLogService auditLogService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public LoginController(ClienteRepository clienteRepository,
-                           AuditLogService auditLogService) {
+                           AuditLogService auditLogService,
+                           BCryptPasswordEncoder passwordEncoder) {
         this.clienteRepository = clienteRepository;
         this.auditLogService = auditLogService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/login")
@@ -37,10 +41,9 @@ public class LoginController {
                               @RequestParam String password,
                               HttpSession session,
                               Model model) {
-        Cliente cliente = clienteRepository.findByUsernameAndPassword(username, password)
-                .orElse(null);
+        Cliente cliente = clienteRepository.findByUsername(username).orElse(null);
 
-        if (cliente == null) {
+        if (cliente == null || !passwordEncoder.matches(password, cliente.getPassword())) {
             model.addAttribute("erro", "Credenciais inválidas.");
             return "login";
         }
