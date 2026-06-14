@@ -77,6 +77,10 @@ public class DesktopMainView {
                     navBtn(theme, "Ver Propostas", () -> {
                         PropostaDesktopView v = new PropostaDesktopView(stage, true);
                         root.setCenter(v.getRoot());
+                    }),
+                    navBtn(theme, "Pedidos de Conta", () -> {
+                        AccountRequestView v = new AccountRequestView();
+                        root.setCenter(v.getRoot());
                     })
             );
         } else {
@@ -108,6 +112,10 @@ public class DesktopMainView {
                     }),
                     destructiveNavBtn("Pedidos Rescisão", () -> {
                         PedidoRescisaoDesktopView v = new PedidoRescisaoDesktopView(stage);
+                        root.setCenter(v.getRoot());
+                    }),
+                    navBtn(theme, "Pedidos de Conta", () -> {
+                        AccountRequestView v = new AccountRequestView();
                         root.setCenter(v.getRoot());
                     })
             );

@@ -25,6 +25,7 @@ public class DatabaseMigration implements CommandLineRunner {
     public void run(String... args) {
         fixPropostasEstadoCheck();
         fixInstalacoesEstadoCheck();
+        fixAuditLogsActionCheck();
     }
 
     private void fixInstalacoesEstadoCheck() {
@@ -35,6 +36,23 @@ public class DatabaseMigration implements CommandLineRunner {
             "ALTER TABLE instalacoes ADD CONSTRAINT instalacoes_estado_check " +
             "CHECK (estado IN (" +
             "'AGENDADA', 'EM_CURSO', 'CONCLUIDA', 'CANCELADA', 'ADIADA'" +
+            "))"
+        );
+    }
+
+    private void fixAuditLogsActionCheck() {
+        jdbc.execute(
+            "ALTER TABLE audit_logs DROP CONSTRAINT IF EXISTS audit_logs_action_check"
+        );
+        jdbc.execute(
+            "ALTER TABLE audit_logs ADD CONSTRAINT audit_logs_action_check " +
+            "CHECK (action IN (" +
+            "'CREATE', 'UPDATE', 'DELETE', 'STATUS_CHANGE', " +
+            "'LOGIN', 'LOGIN_FAILED', 'LOGOUT', " +
+            "'ACCEPT', 'REJECT', 'COUNTER_PROPOSAL', " +
+            "'TERMINATION_REQUEST', 'INSTALLATION_COMPLETED', 'INSTALLATION_DELAYED', " +
+            "'ACCOUNT_REQUEST_SUBMITTED', 'ACCOUNT_REQUEST_APPROVED', 'ACCOUNT_REQUEST_REJECTED', " +
+            "'PASSWORD_RESET_REQUESTED', 'PASSWORD_RESET_COMPLETED', 'PASSWORD_RESET_FAILED'" +
             "))"
         );
     }
