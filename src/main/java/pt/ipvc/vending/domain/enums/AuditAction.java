@@ -6,6 +6,7 @@ public enum AuditAction {
     DELETE,
     STATUS_CHANGE,
     LOGIN,
+    LOGIN_FAILED,
     LOGOUT,
     ACCEPT,
     REJECT,
